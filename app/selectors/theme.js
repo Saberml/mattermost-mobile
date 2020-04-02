@@ -3,9 +3,9 @@
 
 import {createSelector} from 'reselect';
 
-import Preferences from 'mattermost-redux/constants/preferences';
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import Preferences from '@mm-redux/constants/preferences';
+import {getConfig} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 export const getAllowedThemes = createSelector(
     getConfig,
@@ -21,7 +21,7 @@ export const getAllowedThemes = createSelector(
             acceptableThemes = allThemes.filter((theme) => allowedThemeKeys.includes(theme.key));
         }
         return acceptableThemes;
-    }
+    },
 );
 
 export const getCustomTheme = createSelector(
@@ -35,5 +35,5 @@ export const getCustomTheme = createSelector(
             };
         }
         return null;
-    }
+    },
 );

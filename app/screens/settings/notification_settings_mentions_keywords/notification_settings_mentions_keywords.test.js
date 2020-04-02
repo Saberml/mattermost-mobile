@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import {shallowWithIntl} from 'test/intl-test-helper';
 
@@ -20,7 +20,7 @@ describe('NotificationSettingsMentionsKeywords', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <NotificationSettingsMentionsKeywords {...baseProps}/>
+            <NotificationSettingsMentionsKeywords {...baseProps}/>,
         );
 
         expect(wrapper.instance()).toMatchSnapshot();

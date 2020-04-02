@@ -3,9 +3,9 @@
 
 import {connect} from 'react-redux';
 
-import {getUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import AtMentionItem from './at_mention_item';
 
@@ -23,6 +23,7 @@ function mapStateToProps(state, ownProps) {
         isGuest: isGuest(user),
         theme: getTheme(state),
         isLandscape: isLandscape(state),
+        isCurrentUser: getCurrentUserId(state) === user.id,
     };
 }
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import BoolSetting from './bool_setting.js';
 
@@ -21,7 +21,7 @@ describe('components/widgets/settings/TextSetting', () => {
                 theme={theme}
                 onChange={onChange}
                 isLandscape={false}
-            />
+            />,
         );
 
         wrapper.instance().handleChange(false);

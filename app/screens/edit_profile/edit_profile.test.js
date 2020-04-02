@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import EditProfile from './edit_profile.js';
 
@@ -15,6 +15,9 @@ jest.mock('app/utils/theme', () => {
         changeOpacity: jest.fn(),
     };
 });
+jest.mock('react-native-image-picker', () => ({
+    launchCamera: jest.fn(),
+}));
 
 describe('edit_profile', () => {
     const actions = {

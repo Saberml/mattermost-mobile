@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
 
@@ -83,7 +83,7 @@ describe('user_profile', () => {
             <BotTag
                 show={true}
                 theme={baseProps.theme}
-            />
+            />,
         )).toEqual(true);
     });
 
@@ -109,7 +109,7 @@ describe('user_profile', () => {
             <GuestTag
                 show={true}
                 theme={baseProps.theme}
-            />
+            />,
         )).toEqual(true);
     });
 
@@ -168,7 +168,6 @@ describe('user_profile', () => {
 
     test('close should dismiss all modals and pop to root when fromSettings is false', async () => {
         const dismissModal = jest.spyOn(NavigationActions, 'dismissModal');
-        const dismissAllModals = jest.spyOn(NavigationActions, 'dismissAllModals');
         const popToRoot = jest.spyOn(NavigationActions, 'popToRoot');
 
         const props = {...baseProps, fromSettings: false};
@@ -183,7 +182,6 @@ describe('user_profile', () => {
 
         await wrapper.instance().close();
         expect(dismissModal).toHaveBeenCalledTimes(0);
-        expect(dismissAllModals).toHaveBeenCalledTimes(1);
         expect(popToRoot).toHaveBeenCalledTimes(1);
     });
 

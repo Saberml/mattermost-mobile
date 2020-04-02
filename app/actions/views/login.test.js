@@ -4,12 +4,9 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import {ViewTypes} from 'app/constants';
+import * as GeneralActions from '@mm-redux/actions/general';
 
-import {
-    handleLoginIdChanged,
-    handlePasswordChanged,
-} from 'app/actions/views/login';
+import {handleSuccessfulLogin} from 'app/actions/views/login';
 
 jest.mock('app/init/credentials', () => ({
     setAppCredentials: () => jest.fn(),
@@ -36,28 +33,24 @@ describe('Actions.Views.Login', () => {
     let store;
 
     beforeEach(() => {
-        store = mockStore({});
+        store = mockStore({
+            entities: {
+                users: {
+                    currentUserId: 'current-user-id',
+                },
+                general: {
+                    config: {},
+                },
+            },
+        });
     });
 
-    test('handleLoginIdChanged', () => {
-        const loginId = 'email@example.com';
+    test('handleSuccessfulLogin gets config and license ', async () => {
+        const getClientConfig = jest.spyOn(GeneralActions, 'getClientConfig');
+        const getLicenseConfig = jest.spyOn(GeneralActions, 'getLicenseConfig');
 
-        const action = {
-            type: ViewTypes.LOGIN_ID_CHANGED,
-            loginId,
-        };
-        store.dispatch(handleLoginIdChanged(loginId));
-        expect(store.getActions()).toEqual([action]);
-    });
-
-    test('handlePasswordChanged', () => {
-        const password = 'password';
-        const action = {
-            type: ViewTypes.PASSWORD_CHANGED,
-            password,
-        };
-
-        store.dispatch(handlePasswordChanged(password));
-        expect(store.getActions()).toEqual([action]);
+        await store.dispatch(handleSuccessfulLogin());
+        expect(getClientConfig).toHaveBeenCalled();
+        expect(getLicenseConfig).toHaveBeenCalled();
     });
 });

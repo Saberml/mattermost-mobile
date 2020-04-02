@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 
-import {getFormattedFileSize} from 'mattermost-redux/utils/file_utils';
+import {getFormattedFileSize} from '@mm-redux/utils/file_utils';
 
 import SettingsItem from 'app/screens/settings/settings_item';
 import StatusBar from 'app/components/status_bar';
@@ -80,9 +80,7 @@ class AdvancedSettings extends Component {
         this.setState({cacheSize: 0, cacheSizedFetched: true});
         actions.purgeOfflineStore();
 
-        if (Platform.OS === 'android') {
-            dismissAllModals();
-        }
+        dismissAllModals();
     });
 
     renderCacheFileSize = () => {

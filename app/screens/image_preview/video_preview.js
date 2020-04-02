@@ -14,7 +14,7 @@ import Video from 'react-native-video';
 import RNFetchBlob from 'rn-fetch-blob';
 import {intlShape} from 'react-intl';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import VideoControls, {PLAYER_STATE} from 'app/components/video_controls';
 import {DeviceTypes} from 'app/constants/';
@@ -129,7 +129,7 @@ export default class VideoPreview extends PureComponent {
                     id: 'mobile.server_upgrade.button',
                     defaultMessage: 'OK',
                 }),
-            }]
+            }],
         );
     };
 

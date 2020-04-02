@@ -4,8 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import {General} from 'mattermost-redux/constants';
-import Preferences from 'mattermost-redux/constants/preferences';
+import {General} from '@mm-redux/constants';
+import Preferences from '@mm-redux/constants/preferences';
 
 import UserStatus from './user_status';
 
@@ -17,7 +17,7 @@ describe('UserStatus', () => {
 
     test('should match snapshot, should default to offline status', () => {
         const wrapper = shallow(
-            <UserStatus {...baseProps}/>
+            <UserStatus {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -28,7 +28,7 @@ describe('UserStatus', () => {
             <UserStatus
                 {...baseProps}
                 status={General.AWAY}
-            />
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -39,7 +39,7 @@ describe('UserStatus', () => {
             <UserStatus
                 {...baseProps}
                 status={General.DND}
-            />
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -50,7 +50,7 @@ describe('UserStatus', () => {
             <UserStatus
                 {...baseProps}
                 status={General.ONLINE}
-            />
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

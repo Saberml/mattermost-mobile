@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {General} from 'mattermost-redux/constants';
+import {General} from '@mm-redux/constants';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
@@ -143,7 +143,7 @@ export default class NotificationSettingsAutoResponder extends PureComponent {
                                     blurOnSubmit={false}
                                     onChangeText={this.onAutoResponseChangeText}
                                     multiline={true}
-                                    style={style.input}
+                                    style={[style.input, padding(isLandscape)]}
                                     autoCapitalize='none'
                                     autoCorrect={false}
                                     placeholder={{id: t('mobile.notification_settings.auto_responder.message_placeholder'), defaultMessage: 'Message'}}

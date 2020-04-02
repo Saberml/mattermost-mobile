@@ -5,13 +5,12 @@ import {connect} from 'react-redux';
 import {createSelector} from 'reselect';
 import {bindActionCreators} from 'redux';
 
-import {getCustomEmojisByName} from 'mattermost-redux/selectors/entities/emojis';
-import {autocompleteCustomEmojis} from 'mattermost-redux/actions/emojis';
+import {getCustomEmojisByName} from '@mm-redux/selectors/entities/emojis';
+import {autocompleteCustomEmojis} from '@mm-redux/actions/emojis';
 
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {EmojiIndicesByAlias} from 'app/utils/emojis';
-import {compareEmojis} from 'app/utils/emoji_utils';
 
 import EmojiSuggestion from './emoji_suggestion';
 import Fuse from 'fuse.js';
@@ -24,8 +23,8 @@ const getEmojisByName = createSelector(
             emoticons.add(key);
         }
 
-        return Array.from(emoticons).sort(compareEmojis);
-    }
+        return Array.from(emoticons);
+    },
 );
 
 function mapStateToProps(state) {

@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import SendButton from 'app/components/send_button';
 import {changeOpacity} from 'app/utils/theme';
@@ -21,7 +21,7 @@ describe('SendButton', () => {
             <SendButton
                 {...baseProps}
                 {...props}
-            />
+            />,
         );
     }
 

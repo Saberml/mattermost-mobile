@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import {Animated, Text, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 const DISABLED_OPACITY = 0.26;
@@ -44,14 +44,14 @@ class RadioButton extends PureComponent {
             {
                 toValue: 1,
                 duration: 150,
-            }
+            },
         ).start();
         Animated.timing(
             this.state.opacityValue,
             {
                 toValue: 0.1,
                 duration: 100,
-            }
+            },
         ).start();
     };
 
@@ -61,13 +61,13 @@ class RadioButton extends PureComponent {
             {
                 toValue: 0.001,
                 duration: 1500,
-            }
+            },
         ).start();
         Animated.timing(
             this.state.opacityValue,
             {
                 toValue: 0,
-            }
+            },
         ).start();
     };
 

@@ -11,13 +11,13 @@ import {
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {preventDoubleTap} from 'app/utils/tap';
 import {makeStyleSheetFromTheme} from 'app/utils/theme';
 
 class SettingDrawerButton extends PureComponent {
     static propTypes = {
-        openDrawer: PropTypes.func.isRequired,
+        openSidebar: PropTypes.func.isRequired,
         theme: PropTypes.object,
     };
 
@@ -26,7 +26,7 @@ class SettingDrawerButton extends PureComponent {
     };
 
     handlePress = preventDoubleTap(() => {
-        this.props.openDrawer();
+        this.props.openSidebar();
     });
 
     render() {

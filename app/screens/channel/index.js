@@ -4,31 +4,27 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates, logout} from 'mattermost-redux/actions/users';
-import {RequestStatus} from 'mattermost-redux/constants';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {shouldShowTermsOfService} from 'mattermost-redux/selectors/entities/users';
-import {getChannelStats} from 'mattermost-redux/actions/channels';
+import {startPeriodicStatusUpdates, stopPeriodicStatusUpdates} from '@mm-redux/actions/users';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {shouldShowTermsOfService} from '@mm-redux/selectors/entities/users';
+import {getChannelStats} from '@mm-redux/actions/channels';
 
 import {
-    loadChannelsIfNecessary,
-    loadProfilesAndTeamMembersForDMSidebar,
+    loadChannelsForTeam,
     selectInitialChannel,
 } from 'app/actions/views/channel';
 import {connection} from 'app/actions/device';
 import {recordLoadTime} from 'app/actions/views/root';
+import {logout} from 'app/actions/views/user';
 import {selectDefaultTeam} from 'app/actions/views/select_team';
 import {isLandscape} from 'app/selectors/device';
 
 import Channel from './channel';
 
 function mapStateToProps(state) {
-    const {myChannels: channelsRequest} = state.requests.channels;
-
     return {
-        channelsRequestFailed: channelsRequest.status === RequestStatus.FAILURE,
         currentTeamId: getCurrentTeamId(state),
         currentChannelId: getCurrentChannelId(state),
         isLandscape: isLandscape(state),
@@ -42,8 +38,7 @@ function mapDispatchToProps(dispatch) {
         actions: bindActionCreators({
             getChannelStats,
             connection,
-            loadChannelsIfNecessary,
-            loadProfilesAndTeamMembersForDMSidebar,
+            loadChannelsForTeam,
             logout,
             selectDefaultTeam,
             selectInitialChannel,

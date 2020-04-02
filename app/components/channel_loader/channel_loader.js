@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {ImageContent} from 'rn-placeholder';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import CustomPropTypes from 'app/constants/custom_prop_types';
 import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
@@ -93,7 +93,7 @@ export default class ChannelLoader extends PureComponent {
 
     stopLoadingAnimation = () => {
         Animated.timing(
-            this.state.barsOpacity
+            this.state.barsOpacity,
         ).stop();
     }
 

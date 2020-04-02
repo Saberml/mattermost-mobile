@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 import {Dimensions, Keyboard, NativeModules, View} from 'react-native';
 import SafeArea from 'react-native-safe-area';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {DeviceTypes, ViewTypes} from 'app/constants';
 import mattermostManaged from 'app/mattermost_managed';
@@ -111,7 +111,7 @@ export default class SafeAreaIos extends PureComponent {
                     if (this.mounted) {
                         this.setState({statusBarHeight: statusBarFrameData.height});
                     }
-                }
+                },
             );
         } catch (e) {
             // not needed

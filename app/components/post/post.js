@@ -11,9 +11,9 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {Posts} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from 'mattermost-redux/utils/post_utils';
+import {Posts} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {isPostEphemeral, isPostPendingOrFailed, isSystemMessage} from '@mm-redux/utils/post_utils';
 
 import PostBody from 'app/components/post_body';
 import PostHeader from 'app/components/post_header';
@@ -27,8 +27,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import {goToScreen, showModalOverCurrentContext} from 'app/actions/navigation';
-
-import Config from 'assets/config';
 
 export default class Post extends PureComponent {
     static propTypes = {
@@ -262,8 +260,6 @@ export default class Post extends PureComponent {
 
         const style = getStyleSheet(theme);
         const isReplyPost = this.isReplyPost();
-        const onUsernamePress =
-            Config.ExperimentalUsernamePressIsMention && !channelIsReadOnly ? this.autofillUserMention : this.viewUserProfile;
         const mergeMessage = consecutivePost && !hasComments && !isBot;
         const highlightFlagged = isFlagged && !skipFlaggedHeader;
         const hightlightPinned = post.is_pinned && !skipPinnedHeader;
@@ -300,7 +296,7 @@ export default class Post extends PureComponent {
                     shouldRenderReplyButton={shouldRenderReplyButton}
                     showFullDate={showFullDate}
                     onPress={this.handleReply}
-                    onUsernamePress={onUsernamePress}
+                    onUsernamePress={this.viewUserProfile}
                     renderReplies={renderReplies}
                     theme={theme}
                     previousPostExists={previousPostExists}
@@ -320,7 +316,7 @@ export default class Post extends PureComponent {
                     underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                     cancelTouchOnPanning={true}
                 >
-                    <React.Fragment>
+                    <>
                         <PostPreHeader
                             isConsecutive={mergeMessage}
                             isFlagged={isFlagged}
@@ -355,7 +351,7 @@ export default class Post extends PureComponent {
                                 />
                             </View>
                         </View>
-                    </React.Fragment>
+                    </>
                 </TouchableWithFeedback>
             </View>
         );

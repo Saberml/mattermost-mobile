@@ -8,9 +8,9 @@ import {Platform, View, Text} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
-import {debounce} from 'mattermost-redux/actions/helpers';
-import {General} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import BottomSheet from 'app/utils/bottom_sheet';
@@ -21,12 +21,12 @@ import KeyboardLayout from 'app/components/layout/keyboard_layout';
 import Loading from 'app/components/loading';
 import SearchBar from 'app/components/search_bar';
 import StatusBar from 'app/components/status_bar';
+import {NavigationTypes} from 'app/constants';
 import {alertErrorWithFallback, emptyFunction} from 'app/utils/general';
 import {goToScreen, dismissModal, setButtons} from 'app/actions/navigation';
 import {
     changeOpacity,
     makeStyleSheetFromTheme,
-    setNavigatorStyles,
     getKeyboardAppearanceFromTheme,
 } from 'app/utils/theme';
 
@@ -107,10 +107,6 @@ export default class MoreChannels extends PureComponent {
         const {term} = this.state;
         let channels;
         let archivedChannels;
-
-        if (this.props.theme !== nextProps.theme) {
-            setNavigatorStyles(this.props.componentId, nextProps.theme);
-        }
 
         if (nextProps.channels !== this.props.channels) {
             channels = nextProps.channels;
@@ -228,10 +224,10 @@ export default class MoreChannels extends PureComponent {
 
             if (isPublic) {
                 this.publicPage += 1;
-                this.nextPublic = (data && !data.length);
+                this.nextPublic = data?.length > 0;
             } else {
                 this.archivedPage += 1;
-                this.nextArchived = (data && !data.length);
+                this.nextArchived = data?.length > 0;
             }
 
             this.setState({loading: false});
@@ -259,7 +255,7 @@ export default class MoreChannels extends PureComponent {
                 },
                 {
                     displayName: channel ? channel.display_name : '',
-                }
+                },
             );
             this.setHeaderButtons(true);
             this.setState({adding: false});
@@ -271,7 +267,7 @@ export default class MoreChannels extends PureComponent {
             }
             await actions.handleSelectChannel(id);
 
-            EventEmitter.emit('close_channel_drawer');
+            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
             requestAnimationFrame(() => {
                 this.close();
             });
@@ -427,11 +423,6 @@ export default class MoreChannels extends PureComponent {
                 backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
                 color: theme.centerChannelColor,
                 fontSize: 15,
-                ...Platform.select({
-                    android: {
-                        marginBottom: -5,
-                    },
-                }),
             };
 
             let activeChannels = channels;
@@ -512,6 +503,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         searchBar: {
             marginVertical: 5,
+            height: 38,
+            ...Platform.select({
+                ios: {
+                    paddingLeft: 8,
+                },
+            }),
         },
         loadingContainer: {
             alignItems: 'center',

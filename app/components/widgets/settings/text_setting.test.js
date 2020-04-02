@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import TextSetting from './text_setting.js';
 
@@ -18,7 +18,7 @@ describe('components/widgets/settings/TextSetting', () => {
                 value='some value'
                 onChange={onChange}
                 theme={theme}
-            />
+            />,
         );
 
         wrapper.instance().onChangeText('somenewvalue');

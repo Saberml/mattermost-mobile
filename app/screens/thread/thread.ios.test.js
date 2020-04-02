@@ -4,8 +4,8 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
-import {General, RequestStatus} from 'mattermost-redux/constants';
+import Preferences from '@mm-redux/constants/preferences';
+import {General, RequestStatus} from '@mm-redux/constants';
 
 import PostList from 'app/components/post_list';
 import * as NavigationActions from 'app/actions/navigation';
@@ -13,6 +13,9 @@ import * as NavigationActions from 'app/actions/navigation';
 import ThreadIOS from './thread.ios';
 
 jest.mock('react-intl');
+jest.mock('react-native-image-picker', () => ({
+    launchCamera: jest.fn(),
+}));
 
 describe('thread', () => {
     const baseProps = {

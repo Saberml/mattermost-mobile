@@ -10,7 +10,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {intlShape} from 'react-intl';
 import CameraRoll from '@react-native-community/cameraroll';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@mm-redux/client';
 
 import FormattedText from 'app/components/formatted_text';
 import mattermostBucket from 'app/mattermost_bucket';
@@ -226,7 +226,7 @@ export default class Downloader extends PureComponent {
                     defaultMessage: 'OK',
                 }),
                 onPress: () => this.downloadDidCancel(),
-            }]
+            }],
         );
     };
 
@@ -312,7 +312,7 @@ export default class Downloader extends PureComponent {
                     // do nothing
                 });
             }
-            if (error.message !== 'cancelled' && this.mounted) {
+            if (error.message !== 'canceled' && this.mounted) {
                 this.showDownloadFailedAlert();
             } else {
                 this.downloadDidCancel();

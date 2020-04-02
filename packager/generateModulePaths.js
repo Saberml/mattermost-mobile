@@ -16,12 +16,12 @@ const modulePaths = moduleNames.map((moduleName) => {
     if (moduleName.startsWith(localPrefix)) {
         return `./${moduleName.substring(localPrefix.length)}`;
     }
-    if (moduleName.endsWith('.js')) {
+    if (moduleName.endsWith('.js') || moduleName.endsWith('.ts')) {
         return `./node_modules/${moduleName}`;
     }
     try {
         const result = execSync(
-            `grep "@providesModule ${moduleName}" $(find . -name ${moduleName}\\\\.js) -l`
+            `grep "@providesModule ${moduleName}" $(find . -name ${moduleName}\\\\.js) -l`,
         ).toString().trim().split('\n')[0];
 
         if (result != null) {

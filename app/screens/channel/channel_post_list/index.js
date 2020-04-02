@@ -4,20 +4,20 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectPost} from 'mattermost-redux/actions/posts';
-import {getPostIdsInCurrentChannel} from 'mattermost-redux/selectors/entities/posts';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {selectPost} from '@mm-redux/actions/posts';
+import {getPostIdsInCurrentChannel} from '@mm-redux/selectors/entities/posts';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {
     loadPostsIfNecessaryWithRetry,
     loadThreadIfNecessary,
     increasePostVisibility,
-    increasePostVisibilityByOne,
     refreshChannelWithRetry,
 } from 'app/actions/views/channel';
 import {recordLoadTime} from 'app/actions/views/root';
+import {Types} from 'app/constants';
 import {isLandscape} from 'app/selectors/device';
 
 import ChannelPostList from './channel_post_list';
@@ -31,8 +31,7 @@ function mapStateToProps(state) {
         channelRefreshingFailed,
         currentUserId: getCurrentUserId(state),
         deviceHeight: state.device.dimension.deviceHeight,
-        postIds: getPostIdsInCurrentChannel(state),
-        postVisibility: state.views.channel.postVisibility[channelId],
+        postIds: getPostIdsInCurrentChannel(state) || Types.EMPTY_ARRAY,
         lastViewedAt: state.views.channel.lastChannelViewTime[channelId],
         loadMorePostsVisible: state.views.channel.loadMorePostsVisible,
         refreshing: state.views.channel.refreshing,
@@ -47,7 +46,6 @@ function mapDispatchToProps(dispatch) {
             loadPostsIfNecessaryWithRetry,
             loadThreadIfNecessary,
             increasePostVisibility,
-            increasePostVisibilityByOne,
             selectPost,
             recordLoadTime,
             refreshChannelWithRetry,

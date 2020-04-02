@@ -4,7 +4,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 import {ScrollView} from 'react-native';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import ReactionHeader from './reaction_header';
 
@@ -19,7 +19,7 @@ describe('ReactionHeader', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <ReactionHeader {...baseProps}/>
+            <ReactionHeader {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -28,7 +28,7 @@ describe('ReactionHeader', () => {
 
     test('should match snapshot, renderContent', () => {
         const wrapper = shallow(
-            <ReactionHeader {...baseProps}/>
+            <ReactionHeader {...baseProps}/>,
         );
 
         expect(wrapper.instance().renderReactionHeaderItems()).toMatchSnapshot();
@@ -40,7 +40,7 @@ describe('ReactionHeader', () => {
             <ReactionHeader
                 {...baseProps}
                 onSelectReaction={onSelectReaction}
-            />
+            />,
         );
 
         wrapper.instance().handleOnPress();

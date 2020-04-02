@@ -10,7 +10,7 @@ import ExtensionPost from './extension_post';
 jest.spyOn(Alert, 'alert').mockReturnValue(true);
 jest.spyOn(PermissionsAndroid, 'check').mockReturnValue(PermissionsAndroid.RESULTS.GRANTED);
 
-jest.mock('react-navigation-stack/lib/module/views/TouchableItem', () => {});
+jest.mock('react-navigation-stack/lib/module/views/TouchableItem', () => null);
 
 jest.mock('app/mattermost_managed', () => ({
     getConfig: jest.fn().mockReturnValue(false),
@@ -34,7 +34,7 @@ describe('ExtensionPost', () => {
     };
 
     const wrapper = shallowWithIntl(
-        <ExtensionPost {...baseProps}/>
+        <ExtensionPost {...baseProps}/>,
     );
 
     const instance = wrapper.instance();

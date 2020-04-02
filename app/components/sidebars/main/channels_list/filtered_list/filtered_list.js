@@ -13,9 +13,9 @@ import {
 } from 'react-native';
 import {injectIntl, intlShape} from 'react-intl';
 
-import {General} from 'mattermost-redux/constants';
-import {sortChannelsByDisplayName} from 'mattermost-redux/utils/channel_utils';
-import {displayUsername} from 'mattermost-redux/utils/user_utils';
+import {General} from '@mm-redux/constants';
+import {sortChannelsByDisplayName} from '@mm-redux/utils/channel_utils';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import {t} from 'app/utils/i18n';
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {ListTypes} from 'app/constants';
@@ -50,7 +50,6 @@ class FilteredList extends Component {
         styles: PropTypes.object.isRequired,
         term: PropTypes.string,
         theme: PropTypes.object.isRequired,
-        previewChannel: PropTypes.func,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -350,7 +349,6 @@ class FilteredList extends Component {
                 isUnread={item.isUnread}
                 mentions={0}
                 onSelectChannel={this.onSelectChannel}
-                previewChannel={this.props.previewChannel}
             />
         );
     };

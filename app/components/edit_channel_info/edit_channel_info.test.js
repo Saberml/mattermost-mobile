@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import Autocomplete from 'app/components/autocomplete';
 import EditChannelInfo from './edit_channel_info';
@@ -37,7 +37,7 @@ describe('EditChannelInfo', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <EditChannelInfo {...baseProps}/>
+            <EditChannelInfo {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -45,7 +45,7 @@ describe('EditChannelInfo', () => {
 
     test('should have called onHeaderChangeText on text change from Autocomplete', () => {
         const wrapper = shallow(
-            <EditChannelInfo {...baseProps}/>
+            <EditChannelInfo {...baseProps}/>,
         );
 
         const instance = wrapper.instance();
@@ -67,7 +67,7 @@ describe('EditChannelInfo', () => {
 
     test('should call scrollHeaderToTop', () => {
         const wrapper = shallow(
-            <EditChannelInfo {...baseProps}/>
+            <EditChannelInfo {...baseProps}/>,
         );
 
         const instance = wrapper.instance();

@@ -4,20 +4,20 @@
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import {setDeviceToken} from 'mattermost-redux/actions/general';
-import {getPosts} from 'mattermost-redux/actions/posts';
-import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {setDeviceToken} from '@mm-redux/actions/general';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
-import {markChannelViewedAndRead, retryGetPostsAction} from 'app/actions/views/channel';
+import {markChannelViewedAndRead, fetchPostActionWithRetry} from '@actions/views/channel';
+import {dismissAllModals, popToRoot} from '@actions/navigation';
+import {getPosts} from '@actions/views/post';
 import {
     createPostForNotificationReply,
     loadFromPushNotification,
-} from 'app/actions/views/root';
-import {dismissAllModals, popToRoot} from 'app/actions/navigation';
+} from '@actions/views/root';
 
-import {ViewTypes} from 'app/constants';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getLocalizedMessage} from 'app/i18n';
 import {getCurrentServerUrl, getAppCredentials} from 'app/init/credentials';
 import PushNotifications from 'app/push_notifications';
@@ -47,14 +47,14 @@ class PushNotificationUtils {
 
     loadFromNotification = async (notification) => {
         // Set appStartedFromPushNotification to avoid channel screen to call selectInitialChannel
-        EphemeralStore.appStartedFromPushNotification = true;
+        EphemeralStore.setStartFromNotification(true);
         await this.store.dispatch(loadFromPushNotification(notification));
 
         // if we have a componentId means that the app is already initialized
         const componentId = EphemeralStore.getNavigationTopComponentId();
         if (componentId) {
-            EventEmitter.emit('close_channel_drawer');
-            EventEmitter.emit('close_settings_sidebar');
+            EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
+            EventEmitter.emit(NavigationTypes.CLOSE_SETTINGS_SIDEBAR);
 
             await dismissAllModals();
             await popToRoot();
@@ -75,16 +75,13 @@ class PushNotificationUtils {
             dispatch(markChannelViewedAndRead(data.channel_id, null, false));
         } else if (data.type === 'message') {
             // get the posts for the channel as soon as possible
-            retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
+            dispatch(fetchPostActionWithRetry(getPosts(data.channel_id)));
 
             if (foreground) {
                 EventEmitter.emit(ViewTypes.NOTIFICATION_IN_APP, notification);
             } else if (userInteraction && !notification?.data?.localNotification) {
-                EventEmitter.emit('close_channel_drawer');
                 if (getState().views.root.hydrationComplete) { //TODO: Replace when realm is ready
-                    setTimeout(() => {
-                        this.loadFromNotification(notification);
-                    }, 0);
+                    this.loadFromNotification(notification);
                 } else {
                     waitForHydration(this.store, () => {
                         this.loadFromNotification(notification);
@@ -124,7 +121,7 @@ class PushNotificationUtils {
                 Client4.setToken(token);
             }
 
-            retryGetPostsAction(getPosts(data.channel_id), dispatch, getState);
+            dispatch(fetchPostActionWithRetry(getPosts(data.channel_id)));
             const result = await dispatch(createPostForNotificationReply(post));
             if (result.error) {
                 const locale = getCurrentLocale(state);

@@ -4,14 +4,16 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {General} from 'mattermost-redux/constants';
-import {createPost} from 'mattermost-redux/actions/posts';
-import {setStatus} from 'mattermost-redux/actions/users';
-import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats} from 'mattermost-redux/selectors/entities/channels';
-import {canUploadFilesOnMobile, getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {getCurrentUserId, getStatusForUserId} from 'mattermost-redux/selectors/entities/users';
-import {getChannelTimezones} from 'mattermost-redux/actions/channels';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
+import {General, Permissions} from '@mm-redux/constants';
+import {createPost} from '@mm-redux/actions/posts';
+import {setStatus} from '@mm-redux/actions/users';
+import {getCurrentChannel, isCurrentChannelReadOnly, getCurrentChannelStats} from '@mm-redux/selectors/entities/channels';
+import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
+import {canUploadFilesOnMobile, getConfig} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {getCurrentUserId, getStatusForUserId} from '@mm-redux/selectors/entities/users';
+import {getChannelTimezones} from '@mm-redux/actions/channels';
 
 import {executeCommand} from 'app/actions/views/command';
 import {addReactionToLatestPost} from 'app/actions/views/emoji';
@@ -48,6 +50,25 @@ function mapStateToProps(state, ownProps) {
     const currentChannelStats = getCurrentChannelStats(state);
     const currentChannelMembersCount = currentChannelStats?.member_count || 0; // eslint-disable-line camelcase
     const isTimezoneEnabled = config?.ExperimentalTimezone === 'true';
+    const canPost = haveIChannelPermission(
+        state,
+        {
+            channel: currentChannel.id,
+            team: currentChannel.team_id,
+            permission: Permissions.CREATE_POST,
+        },
+    );
+
+    let useChannelMentions = true;
+    if (isMinimumServerVersion(state.entities.general.serverVersion, 5, 22)) {
+        useChannelMentions = haveIChannelPermission(
+            state,
+            {
+                channel: currentChannel.id,
+                permission: Permissions.USE_CHANNEL_MENTIONS,
+            },
+        );
+    }
 
     return {
         currentChannel,
@@ -55,7 +76,6 @@ function mapStateToProps(state, ownProps) {
         channelTeamId: currentChannel ? currentChannel.team_id : '',
         canUploadFiles: canUploadFilesOnMobile(state),
         channelDisplayName: state.views.channel.displayName || (currentChannel ? currentChannel.display_name : ''),
-        channelIsLoading: state.views.channel.loading,
         channelIsReadOnly: isCurrentChannelReadOnly(state) || false,
         channelIsArchived: ownProps.channelIsArchived || (currentChannel ? currentChannel.delete_at !== 0 : false),
         currentUserId,
@@ -71,6 +91,8 @@ function mapStateToProps(state, ownProps) {
         currentChannelMembersCount,
         isTimezoneEnabled,
         isLandscape: isLandscape(state),
+        canPost,
+        useChannelMentions,
     };
 }
 

@@ -4,7 +4,7 @@
 import {latinise} from './latinise.js';
 import {escapeRegex} from './markdown';
 
-import {Files} from 'mattermost-redux/constants';
+import {Files} from '@mm-redux/constants';
 
 import {DeepLinkTypes} from 'app/constants';
 
@@ -84,7 +84,7 @@ export function getShortenedURL(url = '', getLength = 27) {
 }
 
 export function cleanUpUrlable(input) {
-    var cleaned = latinise(input);
+    let cleaned = latinise(input);
     cleaned = cleaned.trim().replace(/-/g, ' ').replace(/[^\w\s]/gi, '').toLowerCase().replace(/\s/g, '-');
     cleaned = cleaned.replace(/-{2,}/, '-');
     cleaned = cleaned.replace(/^-+/, '');
@@ -103,15 +103,27 @@ export function matchDeepLink(url, serverURL, siteURL) {
         return null;
     }
 
-    const linkRoot = `(?:${escapeRegex('mattermost:/')}|${escapeRegex(serverURL)}|${escapeRegex(siteURL)})?`;
+    let urlToMatch = url;
 
-    let match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
+    // If url doesn't contain site or server URL, tack it on.
+    // e.g. <jump to convo> URLs from autolink plugin.
+    const urlBase = serverURL || siteURL;
+    let match = new RegExp(escapeRegex(urlBase)).exec(url);
+    if (!match) {
+        urlToMatch = urlBase + url;
+    }
+
+    const urlBaseWithoutProtocol = removeProtocol(urlBase);
+
+    const linkRoot = `(?:${escapeRegex(urlBaseWithoutProtocol)})`;
+
+    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/channels\\/(\\S+)').exec(urlToMatch);
 
     if (match) {
         return {type: DeepLinkTypes.CHANNEL, teamName: match[1], channelName: match[2]};
     }
 
-    match = new RegExp('^' + linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
+    match = new RegExp(linkRoot + '\\/([^\\/]+)\\/pl\\/(\\w+)').exec(urlToMatch);
     if (match) {
         return {type: DeepLinkTypes.PERMALINK, teamName: match[1], postId: match[2]};
     }

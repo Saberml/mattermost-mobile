@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
 
@@ -109,5 +109,55 @@ describe('MoreChannels', () => {
         wrapper.setState({typeOfChannels: 'archived'});
         instance.searchChannels('archived channel');
         expect(wrapper.state('archivedChannels')).toEqual(baseProps.archivedChannels);
+    });
+
+    test('Allow load more public channels', () => {
+        const wrapper = shallow(
+            <MoreChannels {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+        wrapper.setState({typeOfChannels: 'public'});
+        instance.loadedChannels({data: ['channel-1', 'channel-2']});
+        expect(instance.nextPublic).toBe(true);
+    });
+
+    test('Prevent load more public channels', () => {
+        const wrapper = shallow(
+            <MoreChannels {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+        wrapper.setState({typeOfChannels: 'public'});
+        instance.loadedChannels({data: null});
+        expect(instance.nextPublic).toBe(false);
+
+        instance.loadedChannels({data: []});
+        expect(instance.nextPublic).toBe(false);
+    });
+
+    test('Allow load more archived channels', () => {
+        const wrapper = shallow(
+            <MoreChannels {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+        wrapper.setState({typeOfChannels: 'archived'});
+        instance.loadedChannels({data: ['archived-1', 'archived-2']});
+        expect(instance.nextArchived).toBe(true);
+    });
+
+    test('Prevent load more archived channels', () => {
+        const wrapper = shallow(
+            <MoreChannels {...baseProps}/>,
+            {context: {intl: {formatMessage: jest.fn()}}},
+        );
+        const instance = wrapper.instance();
+        wrapper.setState({typeOfChannels: 'archived'});
+        instance.loadedChannels({data: null});
+        expect(instance.nextArchived).toBe(false);
+
+        instance.loadedChannels({data: []});
+        expect(instance.nextArchived).toBe(false);
     });
 });

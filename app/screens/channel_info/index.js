@@ -10,14 +10,15 @@ import {
     getChannelStats,
     getChannel,
     deleteChannel,
+    unarchiveChannel,
     unfavoriteChannel,
     updateChannelNotifyProps,
-} from 'mattermost-redux/actions/channels';
-import {getCustomEmojisInText} from 'mattermost-redux/actions/emojis';
-import {selectFocusedPostId} from 'mattermost-redux/actions/posts';
-import {clearPinnedPosts} from 'mattermost-redux/actions/search';
-import {General} from 'mattermost-redux/constants';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+} from '@mm-redux/actions/channels';
+import {getCustomEmojisInText} from '@mm-redux/actions/emojis';
+import {selectFocusedPostId} from '@mm-redux/actions/posts';
+import {clearPinnedPosts} from '@mm-redux/actions/search';
+import {General} from '@mm-redux/constants';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 import {
     canManageChannelMembers,
     getCurrentChannel,
@@ -25,13 +26,17 @@ import {
     getSortedFavoriteChannelIds,
     getMyCurrentChannelMembership,
     isCurrentChannelReadOnly,
-} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from 'mattermost-redux/selectors/entities/users';
-import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from 'mattermost-redux/utils/channel_utils';
-import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from 'mattermost-redux/utils/user_utils';
-import {getConfig, getLicense} from 'mattermost-redux/selectors/entities/general';
-import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
-import {getUserCurrentTimezone} from 'mattermost-redux/utils/timezone_utils';
+} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId, getUser, getStatusForUserId, getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
+import {areChannelMentionsIgnored, getUserIdFromChannelName, isChannelMuted, showDeleteOption, showManagementOptions} from '@mm-redux/utils/channel_utils';
+import {isAdmin as checkIsAdmin, isChannelAdmin as checkIsChannelAdmin, isSystemAdmin as checkIsSystemAdmin} from '@mm-redux/utils/user_utils';
+import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
+import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
+import {getUserCurrentTimezone} from '@mm-redux/utils/timezone_utils';
+import Permissions from '@mm-redux/constants/permissions';
+import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
+import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {
     closeDMChannel,
@@ -63,6 +68,7 @@ function mapStateToProps(state) {
     const isCurrent = currentChannel.id === state.entities.channels.currentChannelId;
     const isFavorite = favoriteChannels && favoriteChannels.indexOf(currentChannel.id) > -1;
     const roles = getCurrentUserRoles(state);
+    const {serverVersion} = state.entities.general;
     let canManageUsers = currentChannel.hasOwnProperty('id') ? canManageChannelMembers(state) : false;
     if (currentChannel.group_constrained) {
         canManageUsers = false;
@@ -100,8 +106,17 @@ function mapStateToProps(state) {
         timeZone = getUserCurrentTimezone(currentUser.timezone);
     }
 
+    let canUnarchiveChannel = false;
+    if (hasNewPermissions(state) && isMinimumServerVersion(serverVersion, 5, 20)) {
+        canUnarchiveChannel = haveITeamPermission(state, {
+            team: getCurrentTeamId(state),
+            permission: Permissions.MANAGE_TEAM,
+        });
+    }
+
     return {
         canDeleteChannel: showDeleteOption(state, config, license, currentChannel, isAdmin, isSystemAdmin, isChannelAdmin),
+        canUnarchiveChannel,
         canConvertChannel: isAdmin,
         viewArchivedChannels,
         canEditChannel,
@@ -134,6 +149,7 @@ function mapDispatchToProps(dispatch) {
             closeGMChannel,
             convertChannelToPrivate,
             deleteChannel,
+            unarchiveChannel,
             getChannelStats,
             getChannel,
             leaveChannel,

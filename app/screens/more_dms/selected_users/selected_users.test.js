@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import SelectedUsers from './selected_users.js';
 
@@ -33,7 +33,7 @@ describe('SelectedUsers', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <SelectedUsers {...baseProps}/>
+            <SelectedUsers {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -49,7 +49,7 @@ describe('SelectedUsers', () => {
         };
 
         const wrapper = shallow(
-            <SelectedUsers {...props}/>
+            <SelectedUsers {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -62,7 +62,7 @@ describe('SelectedUsers', () => {
         };
 
         const wrapper = shallow(
-            <SelectedUsers {...props}/>
+            <SelectedUsers {...props}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

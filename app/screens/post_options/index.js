@@ -12,17 +12,17 @@ import {
     unpinPost,
     removePost,
     setUnreadPost,
-} from 'mattermost-redux/actions/posts';
-import {General, Permissions} from 'mattermost-redux/constants';
-import {makeGetReactionsForPost} from 'mattermost-redux/selectors/entities/posts';
-import {getChannel, getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {getConfig, getLicense, hasNewPermissions} from 'mattermost-redux/selectors/entities/general';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
-import {haveIChannelPermission} from 'mattermost-redux/selectors/entities/roles';
-import {getCurrentTeamId, getCurrentTeamUrl} from 'mattermost-redux/selectors/entities/teams';
-import {canEditPost} from 'mattermost-redux/utils/post_utils';
-import {isMinimumServerVersion} from 'mattermost-redux/utils/helpers';
+} from '@mm-redux/actions/posts';
+import {General, Permissions} from '@mm-redux/constants';
+import {makeGetReactionsForPost} from '@mm-redux/selectors/entities/posts';
+import {getChannel, getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId} from '@mm-redux/selectors/entities/users';
+import {getConfig, getLicense, hasNewPermissions} from '@mm-redux/selectors/entities/general';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {haveIChannelPermission} from '@mm-redux/selectors/entities/roles';
+import {getCurrentTeamId, getCurrentTeamUrl} from '@mm-redux/selectors/entities/teams';
+import {canEditPost} from '@mm-redux/utils/post_utils';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import {MAX_ALLOWED_REACTIONS} from 'app/constants/emoji';
 import {THREAD} from 'app/constants/screen';
@@ -45,8 +45,8 @@ export function makeMapStateToProps() {
         const reactions = getReactionsForPostSelector(state, post.id);
         const channelIsArchived = channel.delete_at !== 0;
         const {serverVersion} = state.entities.general;
-        const canMarkAsUnread = isMinimumServerVersion(serverVersion, 5, 18);
 
+        let canMarkAsUnread = true;
         let canAddReaction = true;
         let canReply = true;
         let canCopyPermalink = true;
@@ -56,6 +56,14 @@ export function makeMapStateToProps() {
         let {canDelete} = ownProps;
         let canFlag = true;
         let canPin = true;
+        const canPost = haveIChannelPermission(
+            state,
+            {
+                channel: post.channel_id,
+                team: channel.team_id,
+                permission: Permissions.CREATE_POST,
+            },
+        );
 
         if (hasNewPermissions(state)) {
             canAddReaction = haveIChannelPermission(state, {
@@ -83,6 +91,10 @@ export function makeMapStateToProps() {
             }
         }
 
+        if (!canPost) {
+            canReply = false;
+        }
+
         if (ownProps.isSystemMessage) {
             canAddReaction = false;
             canReply = false;
@@ -105,6 +117,10 @@ export function makeMapStateToProps() {
 
         if (reactions && Object.values(reactions).length >= MAX_ALLOWED_REACTIONS) {
             canAddReaction = false;
+        }
+
+        if (!isMinimumServerVersion(serverVersion, 5, 18) || channelIsArchived) {
+            canMarkAsUnread = false;
         }
 
         return {

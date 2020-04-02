@@ -19,13 +19,12 @@ import {
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import {RequestStatus} from 'mattermost-redux/constants';
-
 import {paddingHorizontal as padding} from 'app/components/safe_area_view/iphone_x_spacing';
 import ErrorText from 'app/components/error_text';
 import FormattedText from 'app/components/formatted_text';
 import StatusBar from 'app/components/status_bar';
 import {resetToChannel, goToScreen} from 'app/actions/navigation';
+import mattermostManaged from 'app/mattermost_managed';
 import {preventDoubleTap} from 'app/utils/tap';
 import tracker from 'app/utils/time_tracker';
 import {t} from 'app/utils/i18n';
@@ -40,18 +39,12 @@ export const mfaExpectedErrors = ['mfa.validate_token.authenticate.app_error', '
 export default class Login extends PureComponent {
     static propTypes = {
         actions: PropTypes.shape({
-            handleLoginIdChanged: PropTypes.func.isRequired,
-            handlePasswordChanged: PropTypes.func.isRequired,
             handleSuccessfulLogin: PropTypes.func.isRequired,
             scheduleExpiredNotification: PropTypes.func.isRequired,
             login: PropTypes.func.isRequired,
         }).isRequired,
-        theme: PropTypes.object,
         config: PropTypes.object.isRequired,
         license: PropTypes.object.isRequired,
-        loginId: PropTypes.string.isRequired,
-        password: PropTypes.string.isRequired,
-        loginRequest: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -64,6 +57,7 @@ export default class Login extends PureComponent {
 
         this.state = {
             error: null,
+            isLoading: false,
         };
     }
 
@@ -71,14 +65,7 @@ export default class Login extends PureComponent {
         Dimensions.addEventListener('change', this.orientationDidChange);
 
         setMfaPreflightDone(false);
-    }
-
-    componentWillReceiveProps(nextProps) {
-        if (this.props.loginRequest.status === RequestStatus.STARTED && nextProps.loginRequest.status === RequestStatus.SUCCESS) {
-            this.props.actions.handleSuccessfulLogin().then(this.goToChannel);
-        } else if (this.props.loginRequest.status !== nextProps.loginRequest.status && nextProps.loginRequest.status !== RequestStatus.STARTED) {
-            this.setState({isLoading: false});
-        }
+        this.setEmmUsernameIfAvailable();
     }
 
     componentWillUnmount() {
@@ -99,8 +86,10 @@ export default class Login extends PureComponent {
         const {intl} = this.context;
         const screen = 'MFA';
         const title = intl.formatMessage({id: 'mobile.routes.mfa', defaultMessage: 'Multi-factor Authentication'});
+        const loginId = this.loginId?._lastNativeText; //eslint-disable-line no-underscore-dangle
+        const password = this.passwd?._lastNativeText; //eslint-disable-line no-underscore-dangle
 
-        goToScreen(screen, title);
+        goToScreen(screen, title, {onMfaComplete: this.checkLoginResponse, loginId, password});
     };
 
     blur = () => {
@@ -109,11 +98,131 @@ export default class Login extends PureComponent {
         Keyboard.dismiss();
     };
 
+    checkLoginResponse = (data) => {
+        if (mfaExpectedErrors.includes(data?.error?.server_error_id)) { // eslint-disable-line camelcase
+            this.goToMfa();
+            this.setState({isLoading: false});
+            return false;
+        }
+
+        if (data?.error) {
+            this.setState({
+                error: this.getLoginErrorMessage(data.error),
+                isLoading: false,
+            });
+            return false;
+        }
+
+        this.setState({isLoading: false});
+        resetToChannel();
+        return true;
+    };
+
+    createLoginPlaceholder() {
+        const {formatMessage} = this.context.intl;
+        const license = this.props.license;
+        const config = this.props.config;
+
+        const loginPlaceholders = [];
+        if (config.EnableSignInWithEmail === 'true') {
+            loginPlaceholders.push(formatMessage({id: 'login.email', defaultMessage: 'Email'}));
+        }
+
+        if (config.EnableSignInWithUsername === 'true') {
+            loginPlaceholders.push(formatMessage({id: 'login.username', defaultMessage: 'Username'}));
+        }
+
+        if (license.IsLicensed === 'true' && license.LDAP === 'true' && config.EnableLdap === 'true') {
+            if (config.LdapLoginFieldName) {
+                loginPlaceholders.push(config.LdapLoginFieldName);
+            } else {
+                loginPlaceholders.push(formatMessage({id: 'login.ldapUsername', defaultMessage: 'AD/LDAP Username'}));
+            }
+        }
+
+        if (loginPlaceholders.length >= 2) {
+            return loginPlaceholders.slice(0, loginPlaceholders.length - 1).join(', ') +
+                ` ${formatMessage({id: 'login.or', defaultMessage: 'or'})} ` +
+                loginPlaceholders[loginPlaceholders.length - 1];
+        } else if (loginPlaceholders.length === 1) {
+            return loginPlaceholders[0];
+        }
+
+        return '';
+    }
+
+    forgotPassword = () => {
+        const {intl} = this.context;
+        const screen = 'ForgotPassword';
+        const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
+
+        goToScreen(screen, title);
+    }
+
+    getLoginErrorMessage = (error) => {
+        return (
+            this.getServerErrorForLogin(error) ||
+            this.state.error
+        );
+    };
+
+    getServerErrorForLogin = (error) => {
+        if (!error) {
+            return null;
+        }
+        const errorId = error.server_error_id;
+        if (!errorId) {
+            return error.message;
+        }
+        if (mfaExpectedErrors.includes(errorId) && !getMfaPreflightDone()) {
+            return null;
+        }
+        if (
+            errorId === 'store.sql_user.get_for_login.app_error' ||
+            errorId === 'ent.ldap.do_login.user_not_registered.app_error'
+        ) {
+            return {
+                intl: {
+                    id: t('login.userNotFound'),
+                    defaultMessage: "We couldn't find an account matching your login credentials.",
+                },
+            };
+        } else if (
+            errorId === 'api.user.check_user_password.invalid.app_error' ||
+            errorId === 'ent.ldap.do_login.invalid_password.app_error'
+        ) {
+            return {
+                intl: {
+                    id: t('login.invalidPassword'),
+                    defaultMessage: 'Your password is incorrect.',
+                },
+            };
+        }
+        return error.message;
+    };
+
+    loginRef = (ref) => {
+        this.loginId = ref;
+    };
+
+    orientationDidChange = () => {
+        this.scroll.scrollToPosition(0, 0, true);
+    };
+
+    passwordRef = (ref) => {
+        this.passwd = ref;
+    };
+
+    passwordFocus = () => {
+        this.passwd.focus();
+    };
+
     preSignIn = preventDoubleTap(() => {
         this.setState({error: null, isLoading: true});
         Keyboard.dismiss();
         InteractionManager.runAfterInteractions(async () => {
-            if (!this.props.loginId) {
+            const loginId = this.loginId?._lastNativeText; //eslint-disable-line no-underscore-dangle
+            if (!loginId) {
                 t('login.noEmail');
                 t('login.noEmailLdapUsername');
                 t('login.noEmailUsername');
@@ -153,7 +262,8 @@ export default class Login extends PureComponent {
                 return;
             }
 
-            if (!this.props.password) {
+            const password = this.passwd?._lastNativeText; //eslint-disable-line no-underscore-dangle
+            if (!password) {
                 this.setState({
                     isLoading: false,
                     error: {
@@ -177,125 +287,30 @@ export default class Login extends PureComponent {
         actions.scheduleExpiredNotification(intl);
     };
 
-    signIn = () => {
-        const {actions, loginId, loginRequest, password} = this.props;
-        if (loginRequest.status !== RequestStatus.STARTED) {
-            actions.login(loginId.toLowerCase(), password).then(this.checkLoginResponse);
-        }
-    };
-
-    checkLoginResponse = (data) => {
-        if (mfaExpectedErrors.includes(data?.error?.server_error_id)) { // eslint-disable-line camelcase
-            this.goToMfa();
-        }
-    };
-
-    createLoginPlaceholder() {
-        const {formatMessage} = this.context.intl;
-        const license = this.props.license;
-        const config = this.props.config;
-
-        const loginPlaceholders = [];
-        if (config.EnableSignInWithEmail === 'true') {
-            loginPlaceholders.push(formatMessage({id: 'login.email', defaultMessage: 'Email'}));
-        }
-
-        if (config.EnableSignInWithUsername === 'true') {
-            loginPlaceholders.push(formatMessage({id: 'login.username', defaultMessage: 'Username'}));
-        }
-
-        if (license.IsLicensed === 'true' && license.LDAP === 'true' && config.EnableLdap === 'true') {
-            if (config.LdapLoginFieldName) {
-                loginPlaceholders.push(config.LdapLoginFieldName);
-            } else {
-                loginPlaceholders.push(formatMessage({id: 'login.ldapUsername', defaultMessage: 'AD/LDAP Username'}));
-            }
-        }
-
-        if (loginPlaceholders.length >= 2) {
-            return loginPlaceholders.slice(0, loginPlaceholders.length - 1).join(', ') +
-                ` ${formatMessage({id: 'login.or', defaultMessage: 'or'})} ` +
-                loginPlaceholders[loginPlaceholders.length - 1];
-        } else if (loginPlaceholders.length === 1) {
-            return loginPlaceholders[0];
-        }
-
-        return '';
-    }
-
-    getLoginErrorMessage = () => {
-        return (
-            this.getServerErrorForLogin() ||
-            this.state.error
-        );
-    };
-
-    getServerErrorForLogin = () => {
-        const {error} = this.props.loginRequest;
-        if (!error) {
-            return null;
-        }
-        const errorId = error.server_error_id;
-        if (!errorId) {
-            return error.message;
-        }
-        if (mfaExpectedErrors.includes(errorId) && !getMfaPreflightDone()) {
-            return null;
-        }
-        if (
-            errorId === 'store.sql_user.get_for_login.app_error' ||
-            errorId === 'ent.ldap.do_login.user_not_registered.app_error'
-        ) {
-            return {
-                intl: {
-                    id: t('login.userNotFound'),
-                    defaultMessage: "We couldn't find an account matching your login credentials.",
-                },
-            };
-        } else if (
-            errorId === 'api.user.check_user_password.invalid.app_error' ||
-            errorId === 'ent.ldap.do_login.invalid_password.app_error'
-        ) {
-            return {
-                intl: {
-                    id: t('login.invalidPassword'),
-                    defaultMessage: 'Your password is incorrect.',
-                },
-            };
-        }
-        return error.message;
-    };
-
-    loginRef = (ref) => {
-        this.loginId = ref;
-    };
-
-    passwordRef = (ref) => {
-        this.passwd = ref;
-    };
-
-    passwordFocus = () => {
-        this.passwd.focus();
-    };
-
-    orientationDidChange = () => {
-        this.scroll.scrollToPosition(0, 0, true);
-    };
-
     scrollRef = (ref) => {
         this.scroll = ref;
     };
 
-    forgotPassword = () => {
-        const {intl} = this.context;
-        const screen = 'ForgotPassword';
-        const title = intl.formatMessage({id: 'password_form.title', defaultMessage: 'Password Reset'});
-
-        goToScreen(screen, title);
+    setEmmUsernameIfAvailable = async () => {
+        const managedConfig = await mattermostManaged.getConfig();
+        if (managedConfig?.username && this.loginId) {
+            this.loginId.setNativeProps({text: 'sample'});
+        }
     }
 
+    signIn = () => {
+        const loginId = this.loginId?._lastNativeText; //eslint-disable-line no-underscore-dangle
+        const password = this.passwd?._lastNativeText; //eslint-disable-line no-underscore-dangle
+        const {actions} = this.props;
+        const {isLoading} = this.state;
+        if (isLoading) {
+            actions.login(loginId.toLowerCase(), password).
+                then(this.checkLoginResponse);
+        }
+    };
+
     render() {
-        const isLoading = this.props.loginRequest.status === RequestStatus.STARTED || this.state.isLoading;
+        const {isLoading} = this.state;
 
         let proceed;
         if (isLoading) {
@@ -352,7 +367,10 @@ export default class Login extends PureComponent {
         return (
             <View style={style.container}>
                 <StatusBar/>
-                <TouchableWithoutFeedback onPress={this.blur}>
+                <TouchableWithoutFeedback
+                    onPress={this.blur}
+                    accessible={false}
+                >
                     <KeyboardAwareScrollView
                         ref={this.scrollRef}
                         style={style.container}
@@ -373,11 +391,9 @@ export default class Login extends PureComponent {
                                 defaultMessage='All team communication in one place, searchable and accessible anywhere'
                             />
                         </View>
-                        <ErrorText error={this.getLoginErrorMessage()}/>
+                        <ErrorText error={this.state.error}/>
                         <TextInput
                             ref={this.loginRef}
-                            value={this.props.loginId}
-                            onChangeText={this.props.actions.handleLoginIdChanged}
                             style={GlobalStyles.inputBox}
                             placeholder={this.createLoginPlaceholder()}
                             placeholderTextColor={changeOpacity('#000', 0.5)}
@@ -392,8 +408,6 @@ export default class Login extends PureComponent {
                         />
                         <TextInput
                             ref={this.passwordRef}
-                            value={this.props.password}
-                            onChangeText={this.props.actions.handlePasswordChanged}
                             style={GlobalStyles.inputBox}
                             placeholder={this.context.intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                             placeholderTextColor={changeOpacity('#000', 0.5)}
@@ -416,7 +430,6 @@ export default class Login extends PureComponent {
 
 const style = StyleSheet.create({
     container: {
-        backgroundColor: '#FFFFFF',
         flex: 1,
     },
     innerContainer: {

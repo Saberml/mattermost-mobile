@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import {intlShape} from 'react-intl';
 
-import {General} from 'mattermost-redux/constants';
+import {General} from '@mm-redux/constants';
 
 import ChannelIcon from 'app/components/channel_icon';
 import FormattedDate from 'app/components/formatted_date';
@@ -114,7 +114,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         const {header} = this.props;
         this.handleLongPress(
             header,
-            formatMessage({id: 'mobile.channel_info.copy_header', defaultMessage: 'Copy Header'})
+            formatMessage({id: 'mobile.channel_info.copy_header', defaultMessage: 'Copy Header'}),
         );
     }
 
@@ -123,7 +123,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
         const {purpose} = this.props;
         this.handleLongPress(
             purpose,
-            formatMessage({id: 'mobile.channel_info.copy_purpose', defaultMessage: 'Copy Purpose'})
+            formatMessage({id: 'mobile.channel_info.copy_purpose', defaultMessage: 'Copy Purpose'}),
         );
     }
 
@@ -187,13 +187,9 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     id='channel_info.purpose'
                                     defaultMessage='Purpose'
                                 />
-                                <Markdown
-                                    onPermalinkPress={onPermalinkPress}
-                                    baseTextStyle={baseTextStyle}
-                                    textStyles={textStyles}
-                                    blockStyles={blockStyles}
-                                    value={purpose}
-                                />
+                                <Text style={baseTextStyle}>
+                                    {purpose}
+                                </Text>
                             </View>
                         </TouchableHighlight>
                     </View>
@@ -217,6 +213,7 @@ export default class ChannelInfoHeader extends React.PureComponent {
                                     blockStyles={blockStyles}
                                     value={header}
                                     onChannelLinkPress={popToRoot}
+                                    disableAtChannelMentionHighlight={true}
                                 />
                             </View>
                         </TouchableHighlight>

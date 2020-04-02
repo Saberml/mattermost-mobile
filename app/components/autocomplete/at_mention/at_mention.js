@@ -5,7 +5,7 @@ import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 import {SectionList} from 'react-native';
 
-import {RequestStatus} from 'mattermost-redux/constants';
+import {RequestStatus} from '@mm-redux/constants';
 
 import {AT_MENTION_REGEX, AT_MENTION_SEARCH_REGEX} from 'app/constants/autocomplete';
 import AtMentionItem from 'app/components/autocomplete/at_mention_item';
@@ -37,6 +37,7 @@ export default class AtMention extends PureComponent {
         value: PropTypes.string,
         isLandscape: PropTypes.bool.isRequired,
         nestedScrollEnabled: PropTypes.bool,
+        useChannelMentions: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
@@ -100,7 +101,7 @@ export default class AtMention extends PureComponent {
                     });
                 }
 
-                if (this.checkSpecialMentions(matchTerm)) {
+                if (this.props.useChannelMentions && this.checkSpecialMentions(matchTerm)) {
                     sections.push({
                         id: t('suggestion.mention.special'),
                         defaultMessage: 'Special Mentions',

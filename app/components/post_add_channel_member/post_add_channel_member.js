@@ -7,7 +7,7 @@ import {intlShape} from 'react-intl';
 
 import {Text} from 'react-native';
 
-import {General} from 'mattermost-redux/constants';
+import {General} from '@mm-redux/constants';
 
 import {concatStyles} from 'app/utils/theme';
 import {t} from 'app/utils/i18n';
@@ -71,7 +71,7 @@ export default class PostAddChannelMember extends React.PureComponent {
                         {
                             username: currentUser.username,
                             addedUsername: usernames[index],
-                        }
+                        },
                     );
 
                     actions.sendAddToChannelEphemeralPost(currentUser, usernames[index], message, post.channel_id, post.root_id);

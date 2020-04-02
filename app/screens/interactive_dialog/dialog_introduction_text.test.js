@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import DialogIntroductionText from './dialog_introduction_text.js';
 
@@ -19,7 +19,7 @@ describe('DialogIntroductionText', () => {
         const wrapper = shallow(
             <DialogIntroductionText
                 {...baseProps}
-            />
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -31,7 +31,7 @@ describe('DialogIntroductionText', () => {
         const wrapper = shallow(
             <DialogIntroductionText
                 {...baseProps}
-            />
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

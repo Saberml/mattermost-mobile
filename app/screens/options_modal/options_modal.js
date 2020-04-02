@@ -11,7 +11,7 @@ import {
     View,
 } from 'react-native';
 
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import {NavigationTypes} from 'app/constants';
 import {emptyFunction} from 'app/utils/general';
@@ -108,7 +108,7 @@ export default class OptionsModal extends PureComponent {
 
 const style = StyleSheet.create({
     wrapper: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: Platform.select({ios: 'rgba(0, 0, 0, 0.5)'}),
         flex: 1,
     },
 });

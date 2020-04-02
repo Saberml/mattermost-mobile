@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
 import {shallowWithIntl} from 'test/intl-test-helper';
@@ -11,7 +11,7 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import FlaggedPosts from './flagged_posts';
 
 jest.mock('rn-placeholder', () => ({
-    ImageContent: () => {},
+    ImageContent: () => null,
 }));
 
 describe('FlaggedPosts', () => {
@@ -29,10 +29,48 @@ describe('FlaggedPosts', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <FlaggedPosts {...baseProps}/>
+            <FlaggedPosts {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when getFlaggedPosts failed', async () => {
+        const error = new Error('foo');
+
+        const newProps = {
+            ...baseProps,
+            actions: {
+                ...baseProps.actions,
+                getFlaggedPosts: jest.fn().mockResolvedValue({error}),
+            },
+        };
+        const wrapper = shallowWithIntl(
+            <FlaggedPosts {...newProps}/>,
+        );
+
+        await wrapper.instance().getFlaggedPosts();
+        expect(wrapper.state('didFail')).toBe(true);
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when component waiting for response', () => {
+        const error = new Error('foo');
+
+        const newProps = {
+            ...baseProps,
+            actions: {
+                ...baseProps.actions,
+                getFlaggedPosts: jest.fn().mockResolvedValue({error}),
+            },
+        };
+        const wrapper = shallowWithIntl(
+            <FlaggedPosts {...newProps}/>,
+        );
+
+        wrapper.instance().getFlaggedPosts();
+        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.state('isLoading')).toBe(true);
     });
 
     test('should call showSearchModal after awaiting dismissModal on handleHashtagPress', async () => {
@@ -42,7 +80,7 @@ describe('FlaggedPosts', () => {
 
         const hashtag = 'test';
         const wrapper = shallowWithIntl(
-            <FlaggedPosts {...baseProps}/>
+            <FlaggedPosts {...baseProps}/>,
         );
 
         dismissModal.mockImplementation(async () => {

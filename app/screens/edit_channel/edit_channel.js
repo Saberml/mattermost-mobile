@@ -10,12 +10,11 @@ import {
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import SafeAreaView from 'app/components/safe_area_view';
-import {General, RequestStatus} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
+import {General, RequestStatus} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 import EditChannelInfo from 'app/components/edit_channel_info';
-import {ViewTypes} from 'app/constants';
-import {setNavigatorStyles} from 'app/utils/theme';
+import {NavigationTypes, ViewTypes} from 'app/constants';
 import {cleanUpUrlable} from 'app/utils/url';
 import {t} from 'app/utils/i18n';
 import {popTopScreen, setButtons} from 'app/actions/navigation';
@@ -65,7 +64,6 @@ export default class EditChannel extends PureComponent {
         channel: PropTypes.object.isRequired,
         currentTeamUrl: PropTypes.string.isRequired,
         updateChannelRequest: PropTypes.object.isRequired,
-        closeButton: PropTypes.object,
     };
 
     static contextTypes = {
@@ -141,17 +139,13 @@ export default class EditChannel extends PureComponent {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.theme !== this.props.theme) {
-            setNavigatorStyles(prevProps.componentId, this.props.theme);
-        }
-
         if (prevProps.updateChannelRequest !== this.props.updateChannelRequest) {
             switch (this.props.updateChannelRequest.status) {
             case RequestStatus.STARTED:
                 this.emitUpdating(true);
                 break;
             case RequestStatus.SUCCESS:
-                EventEmitter.emit('close_channel_drawer');
+                EventEmitter.emit(NavigationTypes.CLOSE_MAIN_SIDEBAR);
                 InteractionManager.runAfterInteractions(() => {
                     this.emitUpdating(false);
                     this.close();
@@ -212,12 +206,12 @@ export default class EditChannel extends PureComponent {
         } else if (displayName.length > ViewTypes.MAX_CHANNELNAME_LENGTH) {
             return {error: formatMessage(
                 messages.display_name_maxLength,
-                {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH}
+                {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH},
             )};
         } else if (displayName.length < ViewTypes.MIN_CHANNELNAME_LENGTH) {
             return {error: formatMessage(
                 messages.display_name_minLength,
-                {minLength: ViewTypes.MIN_CHANNELNAME_LENGTH}
+                {minLength: ViewTypes.MIN_CHANNELNAME_LENGTH},
             )};
         }
 
@@ -232,7 +226,7 @@ export default class EditChannel extends PureComponent {
         } else if (channelURL.length > ViewTypes.MAX_CHANNELNAME_LENGTH) {
             return {error: formatMessage(
                 messages.name_maxLength,
-                {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH}
+                {maxLength: ViewTypes.MAX_CHANNELNAME_LENGTH},
             )};
         }
 

@@ -4,10 +4,9 @@
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {selectFocusedPostId, selectPost} from 'mattermost-redux/actions/posts';
-import {clearSearch, getPinnedPosts} from 'mattermost-redux/actions/search';
-import {RequestStatus} from 'mattermost-redux/constants';
-import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
+import {selectFocusedPostId, selectPost} from '@mm-redux/actions/posts';
+import {clearSearch, getPinnedPosts} from '@mm-redux/actions/search';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
 
 import {loadChannelsByTeamName, loadThreadIfNecessary} from 'app/actions/views/channel';
 import {makePreparePostIdsForSearchPosts} from 'app/selectors/post_list';
@@ -20,14 +19,9 @@ function makeMapStateToProps() {
         const {pinned} = state.entities.search;
         const channelPinnedPosts = pinned[ownProps.currentChannelId] || [];
         const postIds = preparePostIds(state, channelPinnedPosts);
-        const {pinnedPosts: pinnedPostsRequest} = state.requests.search;
-        const isLoading = pinnedPostsRequest.status === RequestStatus.STARTED ||
-            pinnedPostsRequest.status === RequestStatus.NOT_STARTED;
 
         return {
             postIds,
-            isLoading,
-            didFail: pinnedPostsRequest.status === RequestStatus.FAILURE,
             theme: getTheme(state),
         };
     };

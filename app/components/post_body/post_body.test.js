@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {Preferences} from 'mattermost-redux/constants';
+import {Preferences} from '@mm-redux/constants';
 
 import PostBodyAdditionalContent from 'app/components/post_body_additional_content';
 import {shallowWithIntl} from 'test/intl-test-helper';
@@ -92,7 +92,6 @@ describe('PostBody', () => {
         event.nativeEvent.layout.height = wrapper.state('maxHeight') - 1;
         instance.measurePost(event);
         expect(wrapper.state('isLongPost')).toEqual(false);
-
         event.nativeEvent.layout.height = wrapper.state('maxHeight') + 1;
         instance.measurePost(event);
         expect(wrapper.state('isLongPost')).toEqual(true);

@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import Modifier from './modifier';
 
@@ -23,7 +23,7 @@ describe('Search RecentItem', () => {
 
     test('should match snapshot and respond to events', () => {
         const wrapper = shallow(
-            <Modifier {...baseProps}/>
+            <Modifier {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

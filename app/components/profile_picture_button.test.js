@@ -3,11 +3,15 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import ProfilePictureButton from './profile_picture_button.js';
 
-import {Client4} from 'mattermost-redux/client';
+import {Client4} from '@mm-redux/client';
+
+jest.mock('react-native-image-picker', () => ({
+    launchCamera: jest.fn(),
+}));
 
 describe('profile_picture_button', () => {
     const baseProps = {

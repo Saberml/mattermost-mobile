@@ -6,7 +6,7 @@ import {shallow} from 'enzyme';
 import {Image} from 'react-native';
 
 import TouchableWithFeedback from 'app/components/touchable_with_feedback';
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import PostAttachmentOpenGraph from './post_attachment_opengraph';
 
@@ -38,7 +38,7 @@ describe('PostAttachmentOpenGraph', () => {
 
     test('should match snapshot, without image and description', () => {
         const wrapper = shallow(
-            <PostAttachmentOpenGraph {...baseProps}/>
+            <PostAttachmentOpenGraph {...baseProps}/>,
         );
 
         // should return null
@@ -58,7 +58,7 @@ describe('PostAttachmentOpenGraph', () => {
             <PostAttachmentOpenGraph
                 {...baseProps}
                 openGraphData={newOpenGraphData}
-            />
+            />,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
@@ -68,14 +68,14 @@ describe('PostAttachmentOpenGraph', () => {
             <PostAttachmentOpenGraph
                 {...baseProps}
                 openGraphData={{}}
-            />
+            />,
         );
         expect(wrapper.getElement()).toMatchSnapshot();
     });
 
     test('should match state and snapshot, on renderImage', () => {
         const wrapper = shallow(
-            <PostAttachmentOpenGraph {...baseProps}/>
+            <PostAttachmentOpenGraph {...baseProps}/>,
         );
 
         // should return null
@@ -99,7 +99,7 @@ describe('PostAttachmentOpenGraph', () => {
             <PostAttachmentOpenGraph
                 {...baseProps}
                 openGraphData={openGraphData}
-            />
+            />,
         );
 
         // should return null
@@ -112,7 +112,7 @@ describe('PostAttachmentOpenGraph', () => {
 
     test('should match result on getFilename', () => {
         const wrapper = shallow(
-            <PostAttachmentOpenGraph {...baseProps}/>
+            <PostAttachmentOpenGraph {...baseProps}/>,
         );
 
         const testCases = [

@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
-import {General} from 'mattermost-redux/constants';
+import {General} from '@mm-redux/constants';
 
 import ChannelTitle from './channel_title';
 
@@ -20,7 +20,7 @@ describe('ChannelTitle', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <ChannelTitle {...baseProps}/>
+            <ChannelTitle {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

@@ -4,7 +4,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import MarkdownEmoji from './markdown_emoji';
 
@@ -19,7 +19,7 @@ describe('MarkdownEmoji', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <MarkdownEmoji {...baseProps}/>
+            <MarkdownEmoji {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

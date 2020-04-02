@@ -124,20 +124,6 @@ const state = {
                 error: null,
             },
         },
-        preferences: {
-            getMyPreferences: {
-                status: 'not_started',
-                error: null,
-            },
-            savePreferences: {
-                status: 'not_started',
-                error: null,
-            },
-            deletePreferences: {
-                status: 'not_started',
-                error: null,
-            },
-        },
     },
     device: {
         connection: true,
@@ -150,14 +136,9 @@ const state = {
         i18n: {
             locale: '',
         },
-        login: {
-            loginId: '',
-            password: '',
-        },
         root: {
             deepLinkURL: '',
             hydrationComplete: false,
-            purge: false,
         },
         selectServer: {
             serverUrl: Config.DefaultServerUrl,
@@ -168,6 +149,11 @@ const state = {
         thread: {
             drafts: {},
         },
+    },
+    websocket: {
+        connected: false,
+        lastConnectAt: 0,
+        lastDisconnectAt: 0,
     },
 };
 

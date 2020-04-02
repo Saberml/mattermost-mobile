@@ -17,8 +17,8 @@ import {intlShape} from 'react-intl';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesomePro from 'react-native-vector-icons/Ionicons';
 
-import {General} from 'mattermost-redux/constants';
-import {debounce} from 'mattermost-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import {debounce} from '@mm-redux/actions/helpers';
 
 import ChannelItem from 'app/components/sidebars/main/channels_list/channel_item';
 import {paddingLeft as padding} from 'app/components/safe_area_view/iphone_x_spacing';
@@ -48,7 +48,6 @@ export default class List extends PureComponent {
         styles: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         orderedChannelIds: PropTypes.array.isRequired,
-        previewChannel: PropTypes.func,
         isLandscape: PropTypes.bool.isRequired,
     };
 
@@ -309,7 +308,7 @@ export default class List extends PureComponent {
     };
 
     renderItem = ({item}) => {
-        const {favoriteChannelIds, unreadChannelIds, previewChannel} = this.props;
+        const {favoriteChannelIds, unreadChannelIds} = this.props;
 
         return (
             <ChannelItem
@@ -317,7 +316,6 @@ export default class List extends PureComponent {
                 isUnread={unreadChannelIds.includes(item)}
                 isFavorite={favoriteChannelIds.includes(item)}
                 onSelectChannel={this.onSelectChannel}
-                previewChannel={previewChannel}
             />
         );
     };

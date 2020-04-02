@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import * as NavigationActions from 'app/actions/navigation';
 import {shallowWithIntl} from 'test/intl-test-helper';
@@ -11,7 +11,7 @@ import {shallowWithIntl} from 'test/intl-test-helper';
 import RecentMentions from './recent_mentions';
 
 jest.mock('rn-placeholder', () => ({
-    ImageContent: () => {},
+    ImageContent: () => null,
 }));
 
 describe('RecentMentions', () => {
@@ -29,10 +29,48 @@ describe('RecentMentions', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallowWithIntl(
-            <RecentMentions {...baseProps}/>
+            <RecentMentions {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when getRecentMentions failed', async () => {
+        const error = new Error('foo');
+
+        const newProps = {
+            ...baseProps,
+            actions: {
+                ...baseProps.actions,
+                getRecentMentions: jest.fn().mockResolvedValue({error}),
+            },
+        };
+        const wrapper = shallowWithIntl(
+            <RecentMentions {...newProps}/>,
+        );
+
+        await wrapper.instance().getRecentMentions();
+        expect(wrapper.state('didFail')).toBe(true);
+        expect(wrapper.getElement()).toMatchSnapshot();
+    });
+
+    test('should match snapshot when component waiting for response', () => {
+        const error = new Error('foo');
+
+        const newProps = {
+            ...baseProps,
+            actions: {
+                ...baseProps.actions,
+                getRecentMentions: jest.fn().mockResolvedValue({error}),
+            },
+        };
+        const wrapper = shallowWithIntl(
+            <RecentMentions {...newProps}/>,
+        );
+
+        wrapper.instance().getRecentMentions();
+        expect(wrapper.getElement()).toMatchSnapshot();
+        expect(wrapper.state('isLoading')).toBe(true);
     });
 
     test('should call showSearchModal after awaiting dismissModal on handleHashtagPress', async () => {
@@ -42,7 +80,7 @@ describe('RecentMentions', () => {
 
         const hashtag = 'test';
         const wrapper = shallowWithIntl(
-            <RecentMentions {...baseProps}/>
+            <RecentMentions {...baseProps}/>,
         );
 
         dismissModal.mockImplementation(async () => {

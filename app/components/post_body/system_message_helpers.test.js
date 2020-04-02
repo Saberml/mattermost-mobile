@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as SystemMessageHelpers from './system_message_helpers';
-import {Posts} from 'mattermost-redux/constants';
+import {Posts} from '@mm-redux/constants';
 
 const basePostBodyProps = {
     postProps: {
@@ -75,6 +75,28 @@ describe('renderSystemMessage', () => {
         };
 
         const renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
+        expect(renderedMessage).toMatchSnapshot();
+    });
+
+    test('uses renderer for unarchived channel', () => {
+        const postBodyProps = {
+            ...basePostBodyProps,
+            postProps: {
+                ...basePostBodyProps.postProps,
+            },
+            postType: Posts.POST_TYPES.CHANNEL_UNARCHIVED,
+        };
+
+        let renderedMessage = SystemMessageHelpers.renderSystemMessage(postBodyProps, mockStyles, mockIntl);
+        expect(renderedMessage).toMatchSnapshot();
+
+        const noUserInPostBodyProps = {
+            ...basePostBodyProps,
+            postProps: {},
+            postType: Posts.POST_TYPES.CHANNEL_UNARCHIVED,
+        };
+
+        renderedMessage = SystemMessageHelpers.renderSystemMessage(noUserInPostBodyProps, mockStyles, mockIntl);
         expect(renderedMessage).toMatchSnapshot();
     });
 

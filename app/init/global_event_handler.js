@@ -2,28 +2,32 @@
 // See LICENSE.txt for license information.
 
 import {Alert, AppState, Dimensions, Linking, NativeModules, Platform} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import CookieManager from 'react-native-cookies';
 import DeviceInfo from 'react-native-device-info';
 import RNFetchBlob from 'rn-fetch-blob';
-import semver from 'semver';
+import {batchActions} from 'redux-batched-actions';
+import semver from 'semver/preload';
 
-import {setAppState, setServerVersion} from 'mattermost-redux/actions/general';
-import {loadMe, logout} from 'mattermost-redux/actions/users';
-import {autoUpdateTimezone} from 'mattermost-redux/actions/timezone';
-import {close as closeWebSocket} from 'mattermost-redux/actions/websocket';
-import {Client4} from 'mattermost-redux/client';
-import {General} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
-import {getCurrentUserId} from 'mattermost-redux/selectors/entities/users';
-import {isTimezoneEnabled} from 'mattermost-redux/selectors/entities/timezone';
+import {setAppState, setServerVersion} from '@mm-redux/actions/general';
+import {autoUpdateTimezone} from '@mm-redux/actions/timezone';
+import {close as closeWebSocket} from '@actions/websocket';
+import {GeneralTypes} from '@mm-redux/action_types';
+import {Client4} from '@mm-redux/client';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getCurrentChannelId} from '@mm-redux/selectors/entities/channels';
+import {getCurrentUserId, getUser} from '@mm-redux/selectors/entities/users';
+import {isTimezoneEnabled} from '@mm-redux/selectors/entities/timezone';
 
 import {setDeviceDimensions, setDeviceOrientation, setDeviceAsTablet, setStatusBarHeight} from 'app/actions/device';
 import {selectDefaultChannel} from 'app/actions/views/channel';
 import {showOverlay} from 'app/actions/navigation';
 import {loadConfigAndLicense, setDeepLinkURL, startDataCleanup} from 'app/actions/views/root';
+import {loadMe, logout} from 'app/actions/views/user';
 import {NavigationTypes, ViewTypes} from 'app/constants';
 import {getTranslations, resetMomentLocale} from 'app/i18n';
+import initialState from 'app/initial_state';
 import mattermostBucket from 'app/mattermost_bucket';
 import mattermostManaged from 'app/mattermost_managed';
 import PushNotifications from 'app/push_notifications';
@@ -98,7 +102,7 @@ class GlobalEventHandler {
             StatusBarManager.getHeight(
                 (data) => {
                     this.onStatusBarHeightChange(data.height);
-                }
+                },
             );
         }
 
@@ -137,7 +141,9 @@ class GlobalEventHandler {
 
     onDeepLink = (event) => {
         const {url} = event;
-        this.store.dispatch(setDeepLinkURL(url));
+        if (url) {
+            this.store.dispatch(setDeepLinkURL(url));
+        }
     };
 
     onManagedConfigurationChange = () => {
@@ -151,6 +157,7 @@ class GlobalEventHandler {
     onLogout = async () => {
         this.store.dispatch(closeWebSocket(false));
         this.store.dispatch(setServerVersion(''));
+        this.resetState();
         removeAppCredentials();
         deleteFileCache();
         resetMomentLocale();
@@ -161,13 +168,8 @@ class GlobalEventHandler {
         const cacheDir = RNFetchBlob.fs.dirs.CacheDir;
         const mainPath = cacheDir.split('/').slice(0, -1).join('/');
 
-        try {
-            await RNFetchBlob.fs.unlink(cacheDir);
-        } catch (e) {
-            console.log('Failed to remove cache folder', e); //eslint-disable-line no-console
-        }
-
         mattermostBucket.removePreference('cert');
+        mattermostBucket.removePreference('emm');
         if (Platform.OS === 'ios') {
             mattermostBucket.removeFile('entities');
         } else {
@@ -189,22 +191,37 @@ class GlobalEventHandler {
 
     onOrientationChange = (dimensions) => {
         if (this.store) {
-            const {dispatch} = this.store;
+            const {dispatch, getState} = this.store;
+            const deviceState = getState().device;
+
             if (DeviceInfo.isTablet()) {
                 dispatch(setDeviceAsTablet());
             }
 
             const {height, width} = dimensions.window;
             const orientation = height > width ? 'PORTRAIT' : 'LANDSCAPE';
+            const savedOrientation = deviceState?.orientation;
+            const savedDimension = deviceState?.dimension;
 
-            dispatch(setDeviceOrientation(orientation));
-            dispatch(setDeviceDimensions(height, width));
+            if (orientation !== savedOrientation) {
+                dispatch(setDeviceOrientation(orientation));
+            }
+
+            if (height !== savedDimension?.deviceHeight ||
+                width !== savedDimension?.deviceWidth) {
+                dispatch(setDeviceDimensions(height, width));
+            }
         }
     };
 
     onRestartApp = async () => {
-        await this.store.dispatch(loadConfigAndLicense());
-        await this.store.dispatch(loadMe());
+        const {dispatch, getState} = this.store;
+        const state = getState();
+        const {currentUserId} = state.entities.users;
+        const user = getUser(state, currentUserId);
+
+        await dispatch(loadConfigAndLicense());
+        await dispatch(loadMe(user));
 
         const window = Dimensions.get('window');
         this.onOrientationChange({window});
@@ -213,20 +230,16 @@ class GlobalEventHandler {
             StatusBarManager.getHeight(
                 (data) => {
                     this.onStatusBarHeightChange(data.height);
-                }
+                },
             );
-        }
-
-        if (this.launchApp) {
-            const credentials = await getAppCredentials();
-            this.launchApp(credentials);
         }
     };
 
     onServerVersionChanged = async (serverVersion) => {
         const {dispatch, getState} = this.store;
         const state = getState();
-        const version = serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g)[0];
+        const match = serverVersion && serverVersion.match(/^[0-9]*.[0-9]*.[0-9]*(-[a-zA-Z0-9.-]*)?/g);
+        const version = match && match[0];
         const locale = getCurrentLocale(state);
         const translations = getTranslations(locale);
 
@@ -239,7 +252,7 @@ class GlobalEventHandler {
                         text: translations[t('mobile.server_upgrade.button')],
                         onPress: this.serverUpgradeNeeded,
                     }],
-                    {cancelable: false}
+                    {cancelable: false},
                 );
             } else if (state.entities.users && state.entities.users.currentUserId) {
                 dispatch(setServerVersion(serverVersion));
@@ -256,6 +269,32 @@ class GlobalEventHandler {
     onSwitchToDefaultChannel = (teamId) => {
         this.store.dispatch(selectDefaultChannel(teamId));
     };
+
+    resetState = async () => {
+        try {
+            await AsyncStorage.clear();
+            const state = this.store.getState();
+            this.store.dispatch(batchActions([
+                {
+                    type: General.OFFLINE_STORE_RESET,
+                    data: initialState,
+                },
+                {
+                    type: General.STORE_REHYDRATION_COMPLETE,
+                },
+                {
+                    type: ViewTypes.SERVER_URL_CHANGED,
+                    serverUrl: state.entities.general.credentials.url || state.views.selectServer.serverUrl,
+                },
+                {
+                    type: GeneralTypes.RECEIVED_APP_DEVICE_TOKEN,
+                    data: state.entities.general.deviceToken,
+                },
+            ], 'BATCH_RESET_STATE'));
+        } catch (e) {
+            // clear error
+        }
+    }
 
     serverUpgradeNeeded = async () => {
         const {dispatch} = this.store;

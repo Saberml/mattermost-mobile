@@ -17,10 +17,16 @@ describe('Actions.Views.Thread', () => {
     let store;
 
     beforeEach(() => {
-        store = mockStore({});
+        store = mockStore({
+            views: {
+                thread: {
+                    drafts: {},
+                },
+            },
+        });
     });
 
-    test('handleCommentDraftChanged', async () => {
+    test('handleCommentDraftChanged', () => {
         const rootId = '1234';
         const draft = 'draft1';
         const action = {
@@ -28,11 +34,11 @@ describe('Actions.Views.Thread', () => {
             rootId,
             draft,
         };
-        await store.dispatch(handleCommentDraftChanged(rootId, draft));
+        store.dispatch(handleCommentDraftChanged(rootId, draft));
         expect(store.getActions()).toEqual([action]);
     });
 
-    test('handleCommentDraftSelectionChanged', async () => {
+    test('handleCommentDraftSelectionChanged', () => {
         const rootId = '1234';
         const cursorPosition = 'position';
         const action = {
@@ -40,7 +46,7 @@ describe('Actions.Views.Thread', () => {
             rootId,
             cursorPosition,
         };
-        await store.dispatch(handleCommentDraftSelectionChanged(rootId, cursorPosition));
+        store.dispatch(handleCommentDraftSelectionChanged(rootId, cursorPosition));
         expect(store.getActions()).toEqual([action]);
     });
 });

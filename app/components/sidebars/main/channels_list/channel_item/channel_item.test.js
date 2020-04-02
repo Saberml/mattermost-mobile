@@ -3,9 +3,9 @@
 
 import React from 'react';
 import {shallow} from 'enzyme';
-import {Navigation} from 'react-native-navigation';
+import {TouchableHighlight} from 'react-native';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 import ChannelItem from './channel_item.js';
 
@@ -31,7 +31,7 @@ describe('ChannelItem', () => {
         isUnread: true,
         hasDraft: false,
         mentions: 0,
-        onSelectChannel: () => {}, // eslint-disable-line no-empty-function
+        onSelectChannel: () => true,
         shouldHideChannel: false,
         showUnreadForMsgs: true,
         theme: Preferences.THEMES.default,
@@ -217,7 +217,7 @@ describe('ChannelItem', () => {
             {context: {intl: {formatMessage: jest.fn()}}},
         );
 
-        wrapper.find(Navigation.TouchablePreview).simulate('press');
+        wrapper.find(TouchableHighlight).simulate('press');
         jest.runAllTimers();
 
         const expectedChannelParams = {id: baseProps.channelId, display_name: baseProps.displayName, fake: channel.fake, type: channel.type};

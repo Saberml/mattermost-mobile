@@ -4,7 +4,7 @@ import React from 'react';
 import {shallow} from 'enzyme';
 
 import FileAttachment from './file_attachment.js';
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 
 jest.mock('react-native-doc-viewer', () => ({
     openDoc: jest.fn(),
@@ -37,7 +37,7 @@ describe('FileAttachment', () => {
 
     test('should match snapshot', () => {
         const wrapper = shallow(
-            <FileAttachment {...baseProps}/>
+            <FileAttachment {...baseProps}/>,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();

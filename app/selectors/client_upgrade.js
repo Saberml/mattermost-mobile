@@ -4,7 +4,7 @@ import {createSelector} from 'reselect';
 import {Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
-import {getConfig} from 'mattermost-redux/selectors/entities/general';
+import {getConfig} from '@mm-redux/selectors/entities/general';
 
 import LocalConfig from 'assets/config';
 
@@ -29,7 +29,7 @@ const getClientUpgrade = createSelector(
             latestVersion,
             minVersion,
         };
-    }
+    },
 );
 
 export default getClientUpgrade;

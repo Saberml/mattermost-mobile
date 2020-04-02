@@ -5,12 +5,14 @@ import * as ReactNative from 'react-native';
 import MockAsyncStorage from 'mock-async-storage';
 import {configure} from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
+
+require('isomorphic-fetch');
+
 configure({adapter: new Adapter()});
 
 const mockImpl = new MockAsyncStorage();
 jest.mock('@react-native-community/async-storage', () => mockImpl);
 global.window = {};
-global.fetch = jest.fn(() => Promise.resolve());
 
 /* eslint-disable no-console */
 
@@ -50,6 +52,7 @@ jest.doMock('react-native', () => {
         },
         MattermostShare: {
             close: jest.fn(),
+            cacheDirName: 'mmShare',
         },
         PlatformConstants: {
             forceTouchAvailable: false,
@@ -83,6 +86,7 @@ jest.doMock('react-native', () => {
         RNDocumentPicker: {
             pick: jest.fn(),
         },
+        RNPermissions: {},
     };
 
     return Object.setPrototypeOf({
@@ -154,7 +158,6 @@ jest.mock('app/actions/navigation', () => ({
     showModal: jest.fn(),
     showModalOverCurrentContext: jest.fn(),
     showSearchModal: jest.fn(),
-    peek: jest.fn(),
     setButtons: jest.fn(),
     showOverlay: jest.fn(),
     mergeNavigationOptions: jest.fn(),
@@ -164,9 +167,9 @@ jest.mock('app/actions/navigation', () => ({
     dismissOverlay: jest.fn(() => Promise.resolve()),
 }));
 
-let logs;
-let warns;
-let errors;
+let logs = [];
+let warns = [];
+let errors = [];
 beforeAll(() => {
     console.originalLog = console.log;
     console.log = jest.fn((...params) => {
@@ -191,12 +194,6 @@ beforeEach(() => {
     logs = [];
     warns = [];
     errors = [];
-});
-
-afterEach(() => {
-    if (logs.length > 0 || warns.length > 0 || errors.length > 0) {
-        throw new Error('Unexpected console logs' + logs + warns + errors);
-    }
 });
 
 jest.mock('rn-fetch-blob', () => ({

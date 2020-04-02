@@ -3,7 +3,7 @@
 import React from 'react';
 import {shallow} from 'enzyme';
 
-import Preferences from 'mattermost-redux/constants/preferences';
+import Preferences from '@mm-redux/constants/preferences';
 import {TouchableOpacity} from 'react-native';
 import RadioSetting from './radio_setting.js';
 import CheckMark from 'app/components/checkmark';
@@ -26,7 +26,7 @@ describe('components/widgets/settings/RadioSetting', () => {
                 default={'Administration'}
                 onChange={onChange}
                 theme={theme}
-            />
+            />,
         );
         wrapper.find(TouchableOpacity).at(1).props().onPress();
 
@@ -45,7 +45,7 @@ describe('components/widgets/settings/RadioSetting', () => {
                 default={'Administration'}
                 onChange={onChange}
                 theme={theme}
-            />
+            />,
         );
 
         expect(wrapper.getElement()).toMatchSnapshot();
@@ -61,7 +61,7 @@ describe('components/widgets/settings/RadioSetting', () => {
                 default={'invalid-option-value'}
                 onChange={onChange}
                 theme={theme}
-            />
+            />,
         );
 
         expect(wrapper.find(CheckMark)).toHaveLength(0);

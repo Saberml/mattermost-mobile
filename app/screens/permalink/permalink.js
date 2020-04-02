@@ -15,9 +15,9 @@ import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import AwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import {Navigation} from 'react-native-navigation';
 
-import {General} from 'mattermost-redux/constants';
-import EventEmitter from 'mattermost-redux/utils/event_emitter';
-import {getLastPostIndex} from 'mattermost-redux/utils/post_list';
+import {General} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getLastPostIndex} from '@mm-redux/utils/post_list';
 
 import FormattedText from 'app/components/formatted_text';
 import Loading from 'app/components/loading';
@@ -80,6 +80,7 @@ export default class Permalink extends PureComponent {
         postIds: PropTypes.array,
         theme: PropTypes.object.isRequired,
         isLandscape: PropTypes.bool.isRequired,
+        error: PropTypes.string,
     };
 
     static defaultProps = {
@@ -133,6 +134,7 @@ export default class Permalink extends PureComponent {
             channelId,
             channelName,
             focusedPostId,
+            error,
         } = props;
         let loading = true;
 
@@ -143,7 +145,7 @@ export default class Permalink extends PureComponent {
         this.state = {
             title: channelName,
             loading,
-            error: '',
+            error: error || '',
             retry: false,
             channelIdState: channelId,
             channelNameState: channelName,
@@ -283,8 +285,8 @@ export default class Permalink extends PureComponent {
                             defaultMessage: 'Permalink belongs to a deleted message or to a channel to which you do not have access.',
                         }),
                         title: formatMessage({
-                            id: 'mobile.search.no_results',
-                            defaultMessage: 'No Results Found',
+                            id: 'permalink.error.link_not_found',
+                            defaultMessage: 'Link Not Found',
                         }),
                     });
                 } else if (this.mounted) {
@@ -465,6 +467,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             marginTop: 20,
         },
         wrapper: {
+            backgroundColor: theme.centerChannelBg,
             borderRadius: 6,
             flex: 1,
             margin: 10,
@@ -472,7 +475,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         header: {
             alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
             borderTopLeftRadius: 6,
             borderTopRightRadius: 6,
             flexDirection: 'row',
@@ -504,7 +506,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: '600',
         },
         postList: {
-            backgroundColor: theme.centerChannelBg,
             flex: 1,
         },
         bottom: {

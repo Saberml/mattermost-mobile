@@ -5,7 +5,7 @@ import {batchActions} from 'redux-batched-actions';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-import {GeneralTypes} from 'mattermost-redux/action_types';
+import {GeneralTypes} from '@mm-redux/action_types';
 
 import {ViewTypes} from 'app/constants';
 
@@ -20,13 +20,13 @@ describe('Actions.Views.SelectServer', () => {
         store = mockStore({});
     });
 
-    test('handleServerUrlChanged', async () => {
+    test('handleServerUrlChanged', () => {
         const serverUrl = 'https://mattermost.example.com';
         const actions = batchActions([
             {type: GeneralTypes.CLIENT_CONFIG_RESET},
             {type: GeneralTypes.CLIENT_LICENSE_RESET},
             {type: ViewTypes.SERVER_URL_CHANGED, serverUrl},
-        ]);
+        ], 'BATCH_SERVER_URL_CHANGED');
 
         store.dispatch(handleServerUrlChanged(serverUrl));
         expect(store.getActions()).toEqual([actions]);
